@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Generador</title>
+</head>
+<body>
+    <h1>Registro de Datos del Generador</h1>
+   
+
+    <label for="codigo_sitio">Código de Sitio:</label>
+    <input type="text" id="codigo_sitio"><br><br>
+    
+    <label for="nombre">Nombre del Sitio:</label>
+    <input type="text" id="nombre"><br><br>
+
+    <label for="horometro_anterior">Horómetro Anterior:</label>
+    <input type="text" id="horometro_anterior"><br><br>
+
+    <label for="fecha_mantencion_anterior">Fecha de Mantención Anterior:</label>
+    <input type="date" id="fecha_mantencion_anterior"><br><br>
+    
+    <label for="combustible_ultima_visita">Combustible Última Visita (cm):</label>
+    <input type="text" id="combustible_ultima_visita"><br><br>
+
+    <label for="horometro">Horómetro Actual:</label>
+    <input type="text" id="horometro"><br><br>
+
+    <label for="fecha">Fecha Actual:</label>
+    <input type="date" id="fecha"><br><br>
+
+    <label for="combustible_litros">Combustible Cargado (litros):</label>
+    <input type="text" id="combustible_litros"><br><br>
+
+    <label for="combustible_antes">Combustible Antes (cm):</label>
+    <input type="text" id="combustible_antes"><br><br>
+
+    <label for="combustible_despues">Combustible Después (cm):</label>
+    <input type="text" id="combustible_despues"><br><br>
+
+    
+
+    <label for="tipo_visita">Tipo de Visita:</label><br>
+    <input type="checkbox" id="visita_emergencia"> Visita Emergencia<br>
+    <input type="checkbox" id="visita_mantenimiento"> Visita Mantenimiento<br>
+    <input type="checkbox" id="visita_correctivo"> Visita Correctivo<br>
+    <input type="checkbox" id="visita_instalacion"> Visita Instalación<br><br>
+
+    <label for="observaciones">Observaciones:</label><br>
+    <textarea id="observaciones" rows="4" cols="50"></textarea><br><br>
+
+    <button onclick="mostrarVistaPrevia()">Mostrar Vista Previa</button>
+    <button onclick="copiarAlPortapapeles()">Copiar al portapapeles</button><br><br>
+
+    <label for="vista_previa">Vista Previa:</label><br>
+    <textarea id="vista_previa" rows="10" cols="100" readonly></textarea>
+
+    <script>
+        function calcularDiasEntreMantenciones(fechaAnterior, fechaActual) {
+            const fecha1 = new Date(fechaAnterior);
+            const fecha2 = new Date(fechaActual);
+            const diferenciaTiempo = fecha2 - fecha1;
+            const diferenciaDias = Math.ceil(diferenciaTiempo / (1000 * 60 * 60 * 24));
+            return diferenciaDias;
+        }
+
+        function proyectarProximaMantencion(horometroActual, horometroAnterior, fechaVisita) {
+            const diferenciaHoras = horometroActual - horometroAnterior;
+            const diasEntreMantenciones = calcularDiasEntreMantenciones(document.getElementById("fecha_mantencion_anterior").value, fechaVisita);
+            
+            const horasPorDia = diferenciaHoras / diasEntreMantenciones;
+            const diasRestantes = 350 / horasPorDia;
+            const fechaProximaMantencion = new Date(fechaVisita);
+            fechaProximaMantencion.setDate(fechaProximaMantencion.getDate() + Math.ceil(diasRestantes));
+            const dia = fechaProximaMantencion.getDate().toString().padStart(2, '0');
+            const mes = (fechaProximaMantencion.getMonth() + 1).toString().padStart(2, '0');
+            const año = fechaProximaMantencion.getFullYear();
+            return { fechaProximaMantencionFormateada: ${dia}-${mes}-${año}, horasPorDia };
+        }
+
+        function calcularConsumoCombustible() {
+            const combustibleAntes = parseFloat(document.getElementById("combustible_antes").value);
+            const combustibleDespues = parseFloat(document.getElementById("combustible_despues").value);
+            const combustibleUltimaVisita = parseFloat(document.getElementById("combustible_ultima_visita").value);
+            const combustibleLitros = parseFloat(document.getElementById("combustible_litros").value);
+
+            const diferenciaCm = combustibleDespues - combustibleAntes;
+            const factorConversion = combustibleLitros / diferenciaCm;
+            const consumoCm = combustibleUltimaVisita - combustibleAntes;
+
+            return { consumoCm, factorConversion };
+        }
+
+        function obtenerTipoVisita() {
+            if (document.getElementById("visita_emergencia").checked) {
+                return "Visita por Emergencia";
+            } else if (document.getElementById("visita_mantenimiento").checked) {
+                return "Visita por Mantenimiento";
+            } else if (document.getElementById("visita_correctivo").checked) {
+                return "Visita por Correctivo";
+            } else if (document.getElementById("visita_instalacion").checked) {
+                return "Visita por Instalación";
+            } else {
+                return "Sin tipo de visita especificado";
+            }
+        }
+
+        function formatearFecha(fecha) {
+            const partes = fecha.split("-");
+            return ${partes[2]}-${partes[1]}-${partes[0]};
+        }
+
+        function generarMensaje() {
+            const nombre = document.getElementById("nombre").value;
+            const codigoSitio = document.getElementById("codigo_sitio").value;
+            const horometroAnterior = parseInt(document.getElementById("horometro_anterior").value);
+            const horometro = parseInt(document.getElementById("horometro").value);
+            const fechaMantencionAnterior = document.getElementById("fecha_mantencion_anterior").value;
+            const fecha = document.getElementById("fecha").value;
+            const combustibleLitros = document.getElementById("combustible_litros").value;
+            const combustibleAntes = document.getElementById("combustible_antes").value;
+            const combustibleDespues = document.getElementById("combustible_despues").value;
+            const combustibleUltimaVisita = document.getElementById("combustible_ultima_visita").value;
+            const observaciones = document.getElementById("observaciones").value;
+
+            const diasEntreMantenciones = calcularDiasEntreMantenciones(fechaMantencionAnterior, fecha);
+            const { fechaProximaMantencionFormateada, horasPorDia } = proyectarProximaMantencion(horometro, horometroAnterior, fecha);
+            const { consumoCm, factorConversion } = calcularConsumoCombustible();
+
+            const consumoDiarioCm = consumoCm / diasEntreMantenciones;
+            const consumoDiarioLitros = consumoDiarioCm * factorConversion;
+
+            const combustibleAntesLitros = combustibleAntes * factorConversion;
+            const combustibleDespuesLitros = combustibleDespues * factorConversion;
+            const combustibleUltimaVisitaLitros = combustibleUltimaVisita * factorConversion;
+            const consumoLitros = consumoCm * factorConversion;
+
+            const tipoVisita = obtenerTipoVisita();
+
+            return REGISTRO VISITA: ${codigoSitio} ${nombre}
+Horómetro Anterior: ${horometroAnterior}
+Horómetro Actual: ${horometro}
+Fecha de Mantención Anterior: ${formatearFecha(fechaMantencionAnterior)}
+Fecha de Mantención Actual: ${formatearFecha(fecha)}
+Días entre mantenciones: ${diasEntreMantenciones} días
+Horas/Día Generador ON: ${horasPorDia.toFixed(2)} horas/día
+Fecha estimada para la próxima mantención: ${fechaProximaMantencionFormateada}
+Consumo de combustible: ${consumoCm.toFixed(2)} cm (${consumoLitros.toFixed(2)} L)
+Consumo diario de combustible: ${consumoDiarioCm.toFixed(2)} cm/día
+Consumo diario en litros: ${consumoDiarioLitros.toFixed(2)} L/día
+Combustible antes de la carga: ${combustibleAntes} cm (${combustibleAntesLitros.toFixed(2)} L)
+Combustible después de la carga: ${combustibleDespues} cm (${combustibleDespuesLitros.toFixed(2)} L)
+Combustible última visita: ${combustibleUltimaVisita} cm (${combustibleUltimaVisitaLitros.toFixed(2)} L)
+Combustible cargado: ${combustibleLitros} litros
+Tipo de visita: ${tipoVisita}
+Observaciones: ${observaciones};
+        }
+
+        function mostrarVistaPrevia() {
+            const mensaje = generarMensaje();
+            document.getElementById("vista_previa").value = mensaje;
+        }
+
+        function copiarAlPortapapeles() {
+            mostrarVistaPrevia();
+            const mensaje = document.getElementById("vista_previa").value;
+            const textArea = document.createElement("textarea");
+            textArea.value = mensaje;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+
+            alert("Los datos se han copiado al portapapeles.");
+        }
+    </script>
+</body>
+</html>
